@@ -1,0 +1,1788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        :root {
+            --bg: #f5f7fa;
+            --card-bg: rgba(255,255,255,0.96);
+            --muted: #7f8c8d;
+            --primary: #3498db;
+            --primary-600: #2980b9;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --glass: rgba(255,255,255,0.6);
+            --radius: 10px;
+            --max-width: 1200px;
+        }
+
+        :focus {
+            outline: none;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: -999px;
+            top: auto;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .skip-link:focus {
+            left: 16px;
+            top: 12px;
+            width: auto;
+            height: auto;
+            padding: 8px 12px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 6px;
+            z-index: 200;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.night-mode {
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+        }
+
+        .bg-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        body.night-mode .bg-image {
+            opacity: 0.05;
+        }
+
+        .login-container {
+            max-width: 420px;
+            margin: 80px auto;
+            padding: 34px 28px;
+            background: linear-gradient(180deg, var(--card-bg), rgba(250,250,250,0.95));
+            border-radius: calc(var(--radius) + 2px);
+            box-shadow: 0 10px 30px rgba(20,30,40,0.08);
+            backdrop-filter: blur(8px);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .login-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .login-brand .logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            background: linear-gradient(135deg,var(--primary),var(--primary-600));
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            box-shadow: 0 6px 18px rgba(52,152,219,0.14);
+        }
+
+        body.night-mode .login-container {
+            background: rgba(26, 26, 46, 0.9);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-container h1 {
+            margin-bottom: 25px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        body.night-mode .login-container h1 {
+            color: #e6e6e6;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        body.night-mode .form-group label {
+            color: #e6e6e6;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        body.night-mode .form-group input {
+            background-color: rgba(30, 30, 60, 0.8);
+            border-color: #444;
+            color: #e6e6e6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 18px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-600));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s;
+            box-shadow: 0 6px 18px rgba(41,128,185,0.12);
+        }
+
+        .btn:hover, .btn:focus {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 26px rgba(41,128,185,0.14);
+            opacity: 0.98;
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--primary-600);
+            border: 1px solid rgba(52,152,219,0.12);
+            box-shadow: none;
+        }
+
+        .dashboard-container {
+            display: none;
+            flex: 1;
+        }
+
+        header {
+            background: linear-gradient(135deg, #233446, #13242f);
+            color: white;
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 18px rgba(15,30,40,0.08);
+            position: sticky;
+            top: 12px;
+            z-index: 140;
+            margin: 0 16px;
+            border-radius: 12px;
+            align-self: stretch;
+        }
+
+        body.night-mode header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .mode-toggle {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-toggle:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2f4b60, #233146);
+            color: white;
+            height: calc(100vh - 120px);
+            position: fixed;
+            padding-top: 26px;
+            box-shadow: 2px 0 18px rgba(10,20,30,0.06);
+            transition: all 0.28s ease;
+        }
+
+        body.night-mode .sidebar {
+            background: linear-gradient(180deg, #1a1a2e, #16213e);
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar li a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .sidebar li a:hover, .sidebar li a.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .sidebar li a i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.95);
+            flex: 1;
+            min-height: calc(100vh - 70px);
+            padding-bottom: 120px; /* ensure space for footer */
+            transition: background-color 0.3s, padding 0.3s;
+        }
+
+        body.night-mode .content {
+            background-color: rgba(26, 26, 46, 0.9);
+        }
+
+        .section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        body.night-mode .section {
+            background: rgba(30, 30, 60, 0.95);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        body.night-mode .section h2 {
+            color: #e6e6e6;
+            border-bottom-color: #4a6fa5;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg), rgba(245,247,250,0.95));
+            padding: 22px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 12px 30px rgba(20,30,40,0.04);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(20,30,40,0.06);
+        }
+
+        body.night-mode .stat-card {
+            background: linear-gradient(135deg, #16213e, #1a1a2e);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        body.night-mode .stat-card h3 {
+            color: #b8b8b8;
+        }
+
+        .stat-card p {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        body.night-mode .stat-card p {
+            color: #e6e6e6;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-controls input {
+            padding: 12px 15px;
+            width: 300px;
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        body.night-mode .table-controls input {
+            background-color: rgba(30, 30, 60, 0.8);
+            border-color: #444;
+            color: #e6e6e6;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body.night-mode .table-container {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        body.night-mode table {
+            background-color: #1a1a2e;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            vertical-align: middle;
+        }
+
+        body.night-mode th, body.night-mode td {
+            border-bottom-color: #444;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+        }
+
+        body.night-mode th {
+            background-color: #16213e;
+            color: #e6e6e6;
+        }
+
+        tr:hover {
+            background-color: rgba(52,152,219,0.03);
+        }
+
+        a { color: inherit; }
+
+        :focus-visible {
+            outline: 3px solid rgba(52,152,219,0.18);
+            outline-offset: 2px;
+            border-radius: 6px;
+        }
+
+        body.night-mode tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .status-pending {
+            color: #e67e22;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            color: #27ae60;
+            font-weight: 500;
+        }
+
+        .status-accepted {
+            color: #3498db;
+            font-weight: 500;
+        }
+
+        .status-delayed {
+            color: #e74c3c;
+            font-weight: 500;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            margin-right: 5px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .form-col label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        body.night-mode .form-col label {
+            color: #e6e6e6;
+        }
+
+        .form-col input, .form-col select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        body.night-mode .form-col input, 
+        body.night-mode .form-col select {
+            background-color: rgba(30, 30, 60, 0.8);
+            border-color: #444;
+            color: #e6e6e6;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            width: 100%;
+            padding: 14px;
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-container input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .employee-details {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-top: 20px;
+        }
+
+        body.night-mode .employee-details {
+            background: rgba(30, 30, 60, 0.95);
+        }
+
+        .employee-details h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        body.night-mode .employee-details h3 {
+            color: #e6e6e6;
+            border-bottom-color: #444;
+        }
+
+        .employee-details p {
+            margin-bottom: 10px;
+            display: flex;
+        }
+
+        .employee-details p strong {
+            width: 150px;
+            color: #7f8c8d;
+        }
+
+        body.night-mode .employee-details p strong {
+            color: #b8b8b8;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .progress-graph {
+            width: 100%;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body.night-mode .progress-graph {
+            background: rgba(30, 30, 60, 0.9);
+        }
+
+        .api-key-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body.night-mode .api-key-container {
+            background: rgba(30, 30, 60, 0.9);
+        }
+
+        .api-key-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .api-key-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        body.night-mode .api-key-input input {
+            background-color: rgba(30, 30, 60, 0.8);
+            border-color: #444;
+            color: #e6e6e6;
+        }
+
+        /* Updated Footer Styles */
+        footer {
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            color: white;
+            padding: 12px 22px;
+            text-align: center;
+            margin-left: 280px;
+            box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            bottom: 12px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: calc(100% - 280px);
+            z-index: 60;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            backdrop-filter: blur(6px);
+        }
+
+        body.night-mode footer {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 6px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 14px;
+        }
+
+        .footer-social a {
+            color: white;
+            font-size: 20px;
+            transition: transform 0.3s;
+        }
+
+        .footer-social a:hover {
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 220px;
+            }
+            .content {
+                margin-left: 220px;
+            }
+            footer {
+                margin-left: 220px;
+                width: calc(100% - 220px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            
+            .content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            footer {
+                margin-left: 0;
+                width: 100%;
+                position: relative;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-links, .footer-social {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .login-container {
+                margin: 50px auto;
+                padding: 20px;
+            }
+
+            .table-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .table-controls input {
+                width: 100%;
+            }
+
+            .progress-container {
+                height: 250px;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a class="skip-link" href="#mainContent">Skip to content</a>
+    <!-- Background Image -->
+    <div class="bg-image"></div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-container">
+        <h1>Admin Login</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="dashboard-container">
+        <header>
+            <h1>Employee Management System</h1>
+            <div class="header-controls">
+                <button class="mode-toggle" id="modeToggle" aria-label="Toggle color mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <button id="logoutBtn" class="btn logout-btn" aria-label="Logout">Logout</button>
+            </div>
+        </header>
+        
+        <nav class="sidebar">
+            <ul>
+                <li><a href="#" class="active" id="homeLink"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" id="viewEmployeesLink"><i class="fas fa-users"></i> View Employees</a></li>
+                <li><a href="#" id="addEmployeeLink"><i class="fas fa-user-plus"></i> Add Employee</a></li>
+                <li><a href="#" id="searchEmployeeLink"><i class="fas fa-search"></i> Search Employee</a></li>
+            </ul>
+        </nav>
+        
+        <main id="mainContent" class="content" tabindex="-1">
+            <!-- Home Section -->
+            <section id="homeSection" class="section">
+                <h2>Welcome to Employee Management System</h2>
+                <p>Use the navigation menu to manage your employees and their tasks efficiently.</p>
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3>Total Employees</h3>
+                        <p id="totalEmployees">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Tasks</h3>
+                        <p id="activeTasks">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completed Tasks</h3>
+                        <p id="completedTasks">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Delayed Tasks</h3>
+                        <p id="delayedTasks">0</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- View Employees Section -->
+            <section id="viewEmployeesSection" class="section" style="display:none;">
+                <h2>Employee List</h2>
+                <div class="table-controls">
+                    <input type="text" id="searchInput" placeholder="Search employees..." aria-label="Search employees">
+                    <button id="exportBtn" class="btn" aria-label="Export to Excel">Export to Excel</button>
+                    <button id="importBtn" class="btn secondary" aria-label="Import from Excel">Import from Excel</button>
+                    <button id="syncBtn" class="btn" aria-label="Sync with API">Sync with API</button>
+                </div>
+                <div class="table-container">
+                    <table id="employeeTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Task</th>
+                                <th>Assigned Date</th>
+                                <th>Due Date</th>
+                                <th>Completion Date</th>
+                                <th>Accept Status</th>
+                                <th>Task Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Employee data will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <!-- Add Employee Section -->
+            <section id="addEmployeeSection" class="section" style="display:none;">
+                <h2>Add New Employee</h2>
+                <div class="form-container">
+                    <form id="addEmployeeForm">
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="empId">Employee ID:</label>
+                                <input type="text" id="empId" required>
+                            </div>
+                            <div class="form-col">
+                                <label for="empName">Employee Name:</label>
+                                <input type="text" id="empName" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="taskName">Task Name:</label>
+                                <input type="text" id="taskName" required>
+                            </div>
+                            <div class="form-col">
+                                <label for="taskStatus">Task Status:</label>
+                                <select id="taskStatus" required>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="assignDate">Assigned Date:</label>
+                                <input type="date" id="assignDate" required>
+                            </div>
+                            <div class="form-col">
+                                <label for="dueDate">Due Date:</label>
+                                <input type="date" id="dueDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <label for="completionDate">Completion Date:</label>
+                                <input type="date" id="completionDate">
+                            </div>
+                            <div class="form-col">
+                                <label for="acceptStatus">Accept Status:</label>
+                                <select id="acceptStatus">
+                                    <option value="In-Time Accept">In-Time Accept</option>
+                                    <option value="Delay Accept">Delay Accept</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="api-key-container">
+                            <h3>API Configuration</h3>
+                            <div class="api-key-input">
+                                <input type="text" id="apiKey" placeholder="Enter your API key">
+                                <button type="button" id="saveApiKey" class="btn">Save</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn submit-btn">Add Employee</button>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- Search Employee Section -->
+            <section id="searchEmployeeSection" class="section" style="display:none;">
+                <h2>Search Employee</h2>
+                <div class="search-container">
+                    <input type="text" id="searchEmpId" placeholder="Enter Employee ID">
+                    <button id="searchBtn" class="btn">Search</button>
+                </div>
+                <div id="searchResults"></div>
+                <div class="progress-container" id="progressContainer" style="display: none;">
+                    <h3>Task Progress</h3>
+                    <div class="progress-graph">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer Section -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">Contact Us</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+                <div class="copyright">
+                    &copy; 2023 Employee Management System. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Sample employee data with enhanced statuses
+        let employees = [
+            {
+                id: "EMP001",
+                name: "John Doe",
+                task: "Website Redesign",
+                assignDate: "2023-05-15",
+                dueDate: "2023-06-15",
+                completionDate: "",
+                acceptStatus: "In-Time Accept",
+                taskStatus: "Pending",
+                progress: 30
+            },
+            {
+                id: "EMP002",
+                name: "Jane Smith",
+                task: "Database Optimization",
+                assignDate: "2023-05-10",
+                dueDate: "2023-05-30",
+                completionDate: "2023-05-28",
+                acceptStatus: "In-Time Accept",
+                taskStatus: "Completed",
+                progress: 100
+            },
+            {
+                id: "EMP003",
+                name: "Mike Johnson",
+                task: "Mobile App Development",
+                assignDate: "2023-05-20",
+                dueDate: "2023-07-10",
+                completionDate: "",
+                acceptStatus: "Delay Accept",
+                taskStatus: "Pending",
+                progress: 65
+            }
+        ];
+
+        // DOM Elements
+        const loginPage = document.getElementById('loginPage');
+        const dashboardPage = document.getElementById('dashboardPage');
+        const loginForm = document.getElementById('loginForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const modeToggle = document.getElementById('modeToggle');
+        
+        // Navigation Links
+        const homeLink = document.getElementById('homeLink');
+        const viewEmployeesLink = document.getElementById('viewEmployeesLink');
+        const addEmployeeLink = document.getElementById('addEmployeeLink');
+        const searchEmployeeLink = document.getElementById('searchEmployeeLink');
+        
+        // Sections
+        const homeSection = document.getElementById('homeSection');
+        const viewEmployeesSection = document.getElementById('viewEmployeesSection');
+        const addEmployeeSection = document.getElementById('addEmployeeSection');
+        const searchEmployeeSection = document.getElementById('searchEmployeeSection');
+        
+        // Employee Table
+        const employeeTable = document.getElementById('employeeTable').getElementsByTagName('tbody')[0];
+        const searchInput = document.getElementById('searchInput');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const syncBtn = document.getElementById('syncBtn');
+        
+        // Add Employee Form
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        
+        // Search Employee
+        const searchBtn = document.getElementById('searchBtn');
+        const searchEmpId = document.getElementById('searchEmpId');
+        const searchResults = document.getElementById('searchResults');
+        const progressContainer = document.getElementById('progressContainer');
+        
+        // API Key
+        const apiKeyInput = document.getElementById('apiKey');
+        const saveApiKeyBtn = document.getElementById('saveApiKey');
+        
+        // Stats
+        const totalEmployees = document.getElementById('totalEmployees');
+        const activeTasks = document.getElementById('activeTasks');
+        const completedTasks = document.getElementById('completedTasks');
+        const delayedTasks = document.getElementById('delayedTasks');
+
+        // Chart variables
+        let progressChart = null;
+
+        // Night Mode Toggle
+        modeToggle.addEventListener('click', function() {
+            document.body.classList.toggle('night-mode');
+            const icon = this.querySelector('i');
+            if (document.body.classList.contains('night-mode')) {
+                icon.classList.remove('fa-moon');
+                icon.classList.add('fa-sun');
+            } else {
+                icon.classList.remove('fa-sun');
+                icon.classList.add('fa-moon');
+            }
+            
+            // Update chart colors for night mode
+            if (progressChart) {
+                updateChartColors();
+            }
+        });
+
+        // Login Functionality
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // Simple validation (in real app, you would check against a database)
+            if (username === 'admin' && password === 'admin123') {
+                loginPage.style.display = 'none';
+                dashboardPage.style.display = 'block';
+                showSection(homeSection);
+                updateStats();
+                renderEmployeeTable();
+                
+                // Load saved API key if exists
+                const savedApiKey = localStorage.getItem('employeeApiKey');
+                if (savedApiKey) {
+                    apiKeyInput.value = savedApiKey;
+                }
+            } else {
+                alert('Invalid credentials. Please try again.');
+            }
+        });
+
+        // Logout Functionality
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                dashboardPage.style.display = 'none';
+                loginPage.style.display = 'block';
+                loginForm.reset();
+            }
+        });
+
+        // Save API Key
+        saveApiKeyBtn.addEventListener('click', function() {
+            const apiKey = apiKeyInput.value.trim();
+            if (apiKey) {
+                localStorage.setItem('employeeApiKey', apiKey);
+                alert('API key saved successfully!');
+            } else {
+                alert('Please enter a valid API key');
+            }
+        });
+
+        // Navigation
+        homeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection(homeSection);
+            updateActiveLink(this);
+            updateStats();
+        });
+
+        viewEmployeesLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection(viewEmployeesSection);
+            updateActiveLink(this);
+            renderEmployeeTable();
+        });
+
+        addEmployeeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection(addEmployeeSection);
+            updateActiveLink(this);
+            // Reset form and set today's date as default for assigned date
+            addEmployeeForm.reset();
+            document.getElementById('assignDate').valueAsDate = new Date();
+            // Change button text back to "Add Employee" in case it was in edit mode
+            document.querySelector('.submit-btn').textContent = 'Add Employee';
+            // Remove any edit mode event listeners
+            addEmployeeForm._submitHandler = addEmployeeForm.addEventListener('submit', handleAddEmployee);
+        });
+
+        searchEmployeeLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSection(searchEmployeeSection);
+            updateActiveLink(this);
+            searchResults.innerHTML = '';
+            progressContainer.style.display = 'none';
+            searchEmpId.value = '';
+        });
+
+        // Show selected section and hide others
+        function showSection(section) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(sec => {
+                sec.style.display = 'none';
+            });
+            section.style.display = 'block';
+        }
+
+        // Update active navigation link
+        function updateActiveLink(activeLink) {
+            const links = document.querySelectorAll('.sidebar a');
+            links.forEach(link => {
+                link.classList.remove('active');
+            });
+            activeLink.classList.add('active');
+        }
+
+        // Update dashboard statistics
+        function updateStats() {
+            totalEmployees.textContent = employees.length;
+            activeTasks.textContent = employees.filter(emp => 
+                emp.taskStatus === 'Pending' || 
+                emp.taskStatus === 'In-Time Complete' || 
+                emp.taskStatus === 'Delay Complete'
+            ).length;
+            completedTasks.textContent = employees.filter(emp => 
+                emp.taskStatus === 'Completed'
+            ).length;
+            delayedTasks.textContent = employees.filter(emp => 
+                emp.taskStatus === 'Delay Complete' || 
+                (emp.taskStatus === 'Pending' && new Date(emp.dueDate) < new Date())
+            ).length;
+        }
+
+        // Render employee table
+        function renderEmployeeTable(filteredEmployees = null) {
+            employeeTable.innerHTML = '';
+            const data = filteredEmployees || employees;
+            
+                        data.forEach(employee => {
+                const row = employeeTable.insertRow();
+                
+                row.insertCell(0).textContent = employee.id;
+                row.insertCell(1).textContent = employee.name;
+                row.insertCell(2).textContent = employee.task;
+                row.insertCell(3).textContent = formatDate(employee.assignDate);
+                row.insertCell(4).textContent = formatDate(employee.dueDate);
+                row.insertCell(5).textContent = employee.completionDate ? formatDate(employee.completionDate) : '-';
+                
+                const acceptStatusCell = row.insertCell(6);
+                acceptStatusCell.textContent = employee.acceptStatus;
+                acceptStatusCell.className = employee.acceptStatus === 'In-Time Accept' ? 'status-accepted' : 'status-delayed';
+                
+                const taskStatusCell = row.insertCell(7);
+                taskStatusCell.textContent = employee.taskStatus;
+                
+                // Determine task status class based on various conditions
+                if (employee.taskStatus === 'Completed') {
+                    taskStatusCell.className = 'status-completed';
+                } else if (employee.taskStatus === 'Pending') {
+                    // Check if task is overdue
+                    if (new Date(employee.dueDate) < new Date()) {
+                        taskStatusCell.className = 'status-delayed';
+                        taskStatusCell.textContent = 'Overdue';
+                    } else {
+                        taskStatusCell.className = 'status-pending';
+                    }
+                } else if (employee.taskStatus === 'In-Time Complete') {
+                    taskStatusCell.className = 'status-completed';
+                } else if (employee.taskStatus === 'Delay Complete') {
+                    taskStatusCell.className = 'status-delayed';
+                }
+                
+                const actionsCell = row.insertCell(8);
+                const editBtn = document.createElement('button');
+                editBtn.textContent = 'Edit';
+                editBtn.className = 'action-btn edit-btn';
+                editBtn.addEventListener('click', () => editEmployee(employee.id));
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'action-btn delete-btn';
+                deleteBtn.addEventListener('click', () => deleteEmployee(employee.id));
+                
+                actionsCell.appendChild(editBtn);
+                actionsCell.appendChild(deleteBtn);
+            });
+        }
+
+        // Format date for display
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+
+        // Search employees
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filtered = employees.filter(emp => 
+                emp.id.toLowerCase().includes(searchTerm) || 
+                emp.name.toLowerCase().includes(searchTerm) ||
+                emp.task.toLowerCase().includes(searchTerm)
+            );
+            renderEmployeeTable(filtered);
+        });
+
+        // Handle adding new employee
+        function handleAddEmployee(e) {
+            e.preventDefault();
+            
+            const assignDate = new Date(document.getElementById('assignDate').value);
+            const dueDate = new Date(document.getElementById('dueDate').value);
+            const completionDate = document.getElementById('completionDate').value 
+                ? new Date(document.getElementById('completionDate').value) 
+                : null;
+            
+            // Calculate accept status (2 days threshold)
+            const daysToAccept = Math.floor((new Date() - assignDate) / (1000 * 60 * 60 * 24));
+            const acceptStatus = daysToAccept > 2 ? "Delay Accept" : "In-Time Accept";
+            
+            // Calculate task status and progress
+            let taskStatus = document.getElementById('taskStatus').value;
+            let progress = 0;
+            
+            if (taskStatus === 'Completed' && completionDate) {
+                progress = 100;
+                taskStatus = completionDate <= dueDate ? "In-Time Complete" : "Delay Complete";
+            } else if (taskStatus === 'Pending') {
+                if (new Date() > dueDate) {
+                    progress = Math.min(Math.floor((new Date() - assignDate) / (dueDate - assignDate) * 100), 100);
+                } else {
+                    progress = Math.min(Math.floor((new Date() - assignDate) / (dueDate - assignDate) * 100), 100);
+                }
+            }
+            
+            const newEmployee = {
+                id: document.getElementById('empId').value,
+                name: document.getElementById('empName').value,
+                task: document.getElementById('taskName').value,
+                assignDate: document.getElementById('assignDate').value,
+                dueDate: document.getElementById('dueDate').value,
+                completionDate: completionDate ? completionDate.toISOString().split('T')[0] : '',
+                acceptStatus: acceptStatus,
+                taskStatus: taskStatus,
+                progress: progress
+            };
+            
+            employees.push(newEmployee);
+            addEmployeeForm.reset();
+            document.getElementById('assignDate').valueAsDate = new Date();
+            
+            alert('Employee added successfully!');
+            updateStats();
+            
+            if (viewEmployeesSection.style.display === 'block') {
+                renderEmployeeTable();
+            }
+        }
+
+        // Set up the add employee form handler
+        addEmployeeForm._submitHandler = addEmployeeForm.addEventListener('submit', handleAddEmployee);
+
+        // Search employee by ID
+        searchBtn.addEventListener('click', function() {
+            const empId = searchEmpId.value.trim();
+            if (!empId) {
+                alert('Please enter an employee ID');
+                return;
+            }
+            
+            const employee = employees.find(emp => emp.id === empId);
+            if (employee) {
+                const isOverdue = employee.taskStatus === 'Pending' && new Date(employee.dueDate) < new Date();
+                
+                searchResults.innerHTML = `
+                    <div class="employee-details">
+                        <h3>Employee Details</h3>
+                        <p><strong>ID:</strong> ${employee.id}</p>
+                        <p><strong>Name:</strong> ${employee.name}</p>
+                        <p><strong>Task:</strong> ${employee.task}</p>
+                        <p><strong>Assigned Date:</strong> ${formatDate(employee.assignDate)}</p>
+                        <p><strong>Due Date:</strong> ${formatDate(employee.dueDate)} ${isOverdue ? '<span class="status-delayed">(Overdue)</span>' : ''}</p>
+                        <p><strong>Completion Date:</strong> ${employee.completionDate ? formatDate(employee.completionDate) : 'Not completed'}</p>
+                        <p><strong>Accept Status:</strong> <span class="${employee.acceptStatus === 'In-Time Accept' ? 'status-accepted' : 'status-delayed'}">${employee.acceptStatus}</span></p>
+                        <p><strong>Task Status:</strong> <span class="${
+                            employee.taskStatus === 'Completed' || employee.taskStatus === 'In-Time Complete' ? 'status-completed' : 
+                            employee.taskStatus === 'Delay Complete' || isOverdue ? 'status-delayed' : 'status-pending'
+                        }">${isOverdue ? 'Overdue' : employee.taskStatus}</span></p>
+                    </div>
+                `;
+                
+                // Show progress graph
+                progressContainer.style.display = 'block';
+                renderProgressChart(employee);
+            } else {
+                searchResults.innerHTML = '<p>No employee found with that ID.</p>';
+                progressContainer.style.display = 'none';
+            }
+        });
+
+        // Render progress chart for an employee
+        function renderProgressChart(employee) {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // Destroy previous chart if exists
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            progressChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Progress'],
+                    datasets: [{
+                        label: 'Task Completion',
+                        data: [employee.progress],
+                        backgroundColor: [
+                            employee.progress === 100 ? '#27ae60' : 
+                            employee.progress > 70 ? '#3498db' :
+                            employee.progress > 30 ? '#f39c12' : '#e74c3c'
+                        ],
+                        borderColor: [
+                            employee.progress === 100 ? '#219653' : 
+                            employee.progress > 70 ? '#2980b9' :
+                            employee.progress > 30 ? '#e67e22' : '#c0392b'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '% completed';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            updateChartColors();
+        }
+
+        // Update chart colors based on night mode
+        function updateChartColors() {
+            if (!progressChart) return;
+            
+            const isNightMode = document.body.classList.contains('night-mode');
+            
+            progressChart.options.scales.x.grid.color = isNightMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            progressChart.options.scales.y.grid.color = isNightMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            progressChart.options.scales.x.ticks.color = isNightMode ? '#e6e6e6' : '#666';
+            progressChart.options.scales.y.ticks.color = isNightMode ? '#e6e6e6' : '#666';
+            
+            progressChart.update();
+        }
+
+        // Edit employee
+        function editEmployee(empId) {
+            const employee = employees.find(emp => emp.id === empId);
+            if (!employee) return;
+            
+            // Fill the form with employee data
+            document.getElementById('empId').value = employee.id;
+            document.getElementById('empName').value = employee.name;
+            document.getElementById('taskName').value = employee.task;
+            
+            // Determine the base task status (remove any calculated statuses)
+            let baseTaskStatus = employee.taskStatus;
+            if (baseTaskStatus === 'In-Time Complete' || baseTaskStatus === 'Delay Complete') {
+                baseTaskStatus = 'Completed';
+            }
+            document.getElementById('taskStatus').value = baseTaskStatus;
+            
+            document.getElementById('acceptStatus').value = employee.acceptStatus;
+            document.getElementById('assignDate').value = employee.assignDate;
+            document.getElementById('dueDate').value = employee.dueDate;
+            document.getElementById('completionDate').value = employee.completionDate || '';
+            
+            // Change form to edit mode
+            const submitBtn = addEmployeeForm.querySelector('.submit-btn');
+            submitBtn.textContent = 'Update Employee';
+            
+            // Remove any existing submit handlers
+            addEmployeeForm.removeEventListener('submit', addEmployeeForm._submitHandler);
+            
+            // Add update handler
+            const updateHandler = function(e) {
+                e.preventDefault();
+                
+                // Update the employee data
+                employee.name = document.getElementById('empName').value;
+                employee.task = document.getElementById('taskName').value;
+                employee.acceptStatus = document.getElementById('acceptStatus').value;
+                employee.assignDate = document.getElementById('assignDate').value;
+                employee.dueDate = document.getElementById('dueDate').value;
+                employee.completionDate = document.getElementById('completionDate').value || '';
+                
+                // Update task status with calculations
+                const newTaskStatus = document.getElementById('taskStatus').value;
+                if (newTaskStatus === 'Completed' && employee.completionDate) {
+                    const completionDate = new Date(employee.completionDate);
+                    const dueDate = new Date(employee.dueDate);
+                    
+                    if (completionDate <= dueDate) {
+                        employee.taskStatus = 'In-Time Complete';
+                    } else {
+                        employee.taskStatus = 'Delay Complete';
+                    }
+                    employee.progress = 100;
+                } else {
+                    employee.taskStatus = newTaskStatus;
+                    // Update progress based on status
+                    if (newTaskStatus === 'Pending') {
+                        employee.progress = employee.progress || 0;
+                    }
+                }
+                
+                // Reset form
+                addEmployeeForm.reset();
+                document.getElementById('assignDate').valueAsDate = new Date();
+                submitBtn.textContent = 'Add Employee';
+                
+                alert('Employee updated successfully!');
+                renderEmployeeTable();
+                updateStats();
+                
+                // Remove update handler and restore add handler
+                addEmployeeForm.removeEventListener('submit', updateHandler);
+                addEmployeeForm._submitHandler = addEmployeeForm.addEventListener('submit', handleAddEmployee);
+                
+                // Show the view employees section after update
+                showSection(viewEmployeesSection);
+                updateActiveLink(viewEmployeesLink);
+            };
+            
+            addEmployeeForm.addEventListener('submit', updateHandler);
+            
+            // Show the add employee section
+            showSection(addEmployeeSection);
+            updateActiveLink(addEmployeeLink);
+        }
+
+        // Delete employee
+        function deleteEmployee(empId) {
+            if (confirm('Are you sure you want to delete this employee?')) {
+                employees = employees.filter(emp => emp.id !== empId);
+                renderEmployeeTable();
+                updateStats();
+                alert('Employee deleted successfully!');
+                
+                // Hide progress graph if showing the deleted employee
+                if (searchEmpId.value === empId) {
+                    searchResults.innerHTML = '';
+                    progressContainer.style.display = 'none';
+                }
+            }
+        }
+
+        // Export to Excel
+        exportBtn.addEventListener('click', function() {
+            // Get API key
+            const apiKey = localStorage.getItem('employeeApiKey');
+            
+            if (!apiKey) {
+                alert('Please set your API key in the Add Employee section first');
+                showSection(addEmployeeSection);
+                updateActiveLink(addEmployeeLink);
+                return;
+            }
+            
+            // Create CSV content
+            let csv = 'ID,Name,Task,Assigned Date,Due Date,Completion Date,Accept Status,Task Status,Progress\n';
+            
+            employees.forEach(emp => {
+                csv += `"${emp.id}","${emp.name}","${emp.task}","${formatDate(emp.assignDate)}","${formatDate(emp.dueDate)}","${emp.completionDate ? formatDate(emp.completionDate) : ''}","${emp.acceptStatus}","${emp.taskStatus}","${emp.progress}%"\n`;
+            });
+            
+            // In a real app, you would send this data to your API
+            // For demo purposes, we'll just download it as a file
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'employees.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Simulate API call (in a real app, you would actually call your API)
+            console.log('Data would be sent to API with key:', apiKey);
+        });
+
+        // Import from Excel
+        importBtn.addEventListener('click', function() {
+            const apiKey = localStorage.getItem('employeeApiKey');
+            
+            if (!apiKey) {
+                alert('Please set your API key in the Add Employee section first');
+                showSection(addEmployeeSection);
+                updateActiveLink(addEmployeeLink);
+                return;
+            }
+            
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xlsx,.xls,.csv';
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                        
+                        processImportedData(jsonData);
+                    } catch (error) {
+                        alert('Error processing Excel file: ' + error.message);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+            fileInput.click();
+        });
+
+        function processImportedData(importedData) {
+            const newEmployees = importedData.map(item => {
+                const assignDate = new Date(item['Assigned Date'] || item['Assign Date'] || item['Start Date']);
+                const dueDate = new Date(item['Due Date'] || item['End Date']);
+                const completionDate = item['Completion Date'] ? new Date(item['Completion Date']) : null;
+                
+                // Calculate accept status (2 days threshold)
+                const daysToAccept = Math.floor((new Date() - assignDate) / (1000 * 60 * 60 * 24));
+                const acceptStatus = daysToAccept > 2 ? "Delay Accept" : "In-Time Accept";
+                
+                // Calculate task status and progress
+                let taskStatus = item['Task Status'] || "Pending";
+                let progress = item['Progress'] || 0;
+                
+                if (taskStatus === 'Completed' && completionDate) {
+                    progress = 100;
+                    taskStatus = completionDate <= dueDate ? "In-Time Complete" : "Delay Complete";
+                } else if (taskStatus === 'Pending') {
+                    if (new Date() > dueDate) {
+                        progress = Math.min(Math.floor((new Date() - assignDate) / (dueDate - assignDate) * 100), 100);
+                    } else {
+                        progress = Math.min(Math.floor((new Date() - assignDate) / (dueDate - assignDate) * 100), 100);
+                    }
+                }
+                
+                return {
+                    id: item['Employee ID'] || item['ID'] || generateEmployeeId(),
+                    name: item['Name'] || 'Unknown',
+                    task: item['Task'] || 'No task assigned',
+                    assignDate: assignDate.toISOString().split('T')[0],
+                    dueDate: dueDate.toISOString().split('T')[0],
+                    completionDate: completionDate ? completionDate.toISOString().split('T')[0] : '',
+                    acceptStatus: item['Accept Status'] || acceptStatus,
+                    taskStatus: taskStatus,
+                    progress: progress
+                };
+            });
+            
+            employees = [...employees, ...newEmployees];
+            renderEmployeeTable();
+            updateStats();
+                        alert(`Successfully imported ${newEmployees.length} employees from Excel`);
+        }
+
+        function generateEmployeeId() {
+            const lastId = employees.reduce((max, emp) => {
+                const num = parseInt(emp.id.replace('EMP', '')) || 0;
+                return num > max ? num : max;
+            }, 0);
+            return `EMP${String(lastId + 1).padStart(3, '0')}`;
+        }
+
+        // Sync with API
+        syncBtn.addEventListener('click', function() {
+            const apiKey = localStorage.getItem('employeeApiKey');
+            
+            if (!apiKey) {
+                alert('Please set your API key in the Add Employee section first');
+                showSection(addEmployeeSection);
+                updateActiveLink(addEmployeeLink);
+                return;
+            }
+            
+            // Show loading state
+            syncBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Syncing...';
+            
+            // Simulate API sync (in a real app, you would make an actual API call)
+            setTimeout(() => {
+                // For demo purposes, we'll just update the existing employees
+                employees.forEach(emp => {
+                    if (emp.taskStatus === 'Pending') {
+                        // Simulate progress updates
+                        emp.progress = Math.min(emp.progress + 10, 100);
+                        
+                        // Randomly complete some tasks
+                        if (Math.random() > 0.7 && !emp.completionDate) {
+                            emp.taskStatus = 'Completed';
+                            emp.completionDate = new Date().toISOString().split('T')[0];
+                            emp.progress = 100;
+                        }
+                    }
+                });
+                
+                renderEmployeeTable();
+                updateStats();
+                syncBtn.innerHTML = 'Sync with API';
+                alert('Sync completed successfully!');
+            }, 1500);
+        });
+
+        // Initialize the form with today's date
+        document.getElementById('assignDate').valueAsDate = new Date();
+
+        // Auto-calculate status when dates change
+        document.getElementById('assignDate').addEventListener('change', calculateStatus);
+        document.getElementById('dueDate').addEventListener('change', calculateStatus);
+        document.getElementById('completionDate').addEventListener('change', calculateStatus);
+
+        function calculateStatus() {
+            const assignDate = new Date(document.getElementById('assignDate').value);
+            const dueDate = new Date(document.getElementById('dueDate').value);
+            const completionDate = document.getElementById('completionDate').value 
+                ? new Date(document.getElementById('completionDate').value) 
+                : null;
+            
+            // Calculate accept status (2 days threshold)
+            const daysToAccept = Math.floor((new Date() - assignDate) / (1000 * 60 * 60 * 24));
+            const acceptStatus = daysToAccept > 2 ? "Delay Accept" : "In-Time Accept";
+            document.getElementById('acceptStatus').value = acceptStatus;
+            
+            // Calculate task status
+            if (completionDate) {
+                document.getElementById('taskStatus').value = "Completed";
+            } else {
+                document.getElementById('taskStatus').value = "Pending";
+            }
+        }
+
+        // Small UX & accessibility improvements
+        (function() {
+            // Dynamic copyright year
+            const yearEl = document.querySelector('.copyright');
+            if (yearEl) {
+                yearEl.innerHTML = `&copy; ${new Date().getFullYear()} Employee Management System. All rights reserved.`;
+            }
+
+            // Skip-link: move focus to main content
+            const skipLink = document.querySelector('.skip-link');
+            if (skipLink) {
+                skipLink.addEventListener('click', function(e) {
+                    const main = document.getElementById('mainContent');
+                    if (main) {
+                        main.setAttribute('tabindex', '-1');
+                        main.focus();
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
